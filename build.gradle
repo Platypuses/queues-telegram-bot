@@ -1,0 +1,26 @@
+plugins {
+    id "java"
+    id "org.springframework.boot" version "$springBootVersion"
+    id "io.spring.dependency-management" version "$springDependencyManagementVersion"
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    implementation "org.springframework.boot:spring-boot-starter:$springBootVersion"
+    implementation "org.telegram:telegrambots-spring-boot-starter:$telegramBotsVersion"
+    implementation "com.squareup.retrofit2:retrofit:$retrofitVersion"
+    implementation "com.squareup.retrofit2:converter-jackson:$retrofitVersion"
+    compileOnly "org.projectlombok:lombok:$lombokVersion"
+
+    annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion"
+}
+
+tasks.withType(JavaCompile) {
+    def javaVersion = JavaVersion.VERSION_11.toString()
+    setSourceCompatibility javaVersion
+    setTargetCompatibility javaVersion
+}

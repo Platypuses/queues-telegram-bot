@@ -1,0 +1,7 @@
+# Build and IDE files
+.gradle
+build
+.idea
+
+# Logs
+*.log

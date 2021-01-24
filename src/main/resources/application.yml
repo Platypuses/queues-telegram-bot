@@ -1,0 +1,18 @@
+logging:
+  level:
+    com.platypuses.bot: info
+    root: info
+  file:
+    name: ${LOGS_DIRECTORY:logs}/telegram-bot.log
+  pattern:
+    dateformat: dd-MM-yyyy HH:mm:ss.SSS, Europe/Minsk
+  logback:
+    rollingpolicy:
+      max-history: 30
+      max-file-size: 10MB
+      file-name-pattern: ${LOGS_DIRECTORY:logs}/archived/telegram-bot.%d{dd-MM-yyyy}.%i.log
+
+bot:
+  username: ${BOT_USERNAME}
+  token: ${BOT_TOKEN}
+  backend-base-url: ${BACKEND_BASE_URL:http://localhost:8070/}
