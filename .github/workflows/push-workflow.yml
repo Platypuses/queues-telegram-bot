@@ -1,0 +1,71 @@
+name: Update application on server
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Run tests
+        run: ./gradlew clean test
+
+  build:
+    needs:
+      - tests
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: ${{ secrets.DOCKER_LOGIN }}/queues-telegram-bot:latest
+    steps:
+      - name: Login to Docker registry
+        run: echo '${{ secrets.DOCKER_PASSWORD }}' | docker login -u ${{ secrets.DOCKER_LOGIN }} --password-stdin
+
+      - uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build the Docker image
+        run: ./gradlew clean bootJar && docker build -t $IMAGE_NAME .
+
+      - name: Push image to DockerHub
+        run: docker push $IMAGE_NAME
+
+  deploy:
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: ${{ secrets.DOCKER_LOGIN }}/queues-telegram-bot:latest
+      DOCKER_SERVICE_NAME: ${{ secrets.DOCKER_SERVICE_NAME }}
+    steps:
+      - name: Update running service
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script_stop: true
+          envs: IMAGE_NAME,DOCKER_SERVICE_NAME
+          script: |
+            cd queues-bot-environment
+            docker pull $IMAGE_NAME
+            docker-compose up -d $DOCKER_SERVICE_NAME
